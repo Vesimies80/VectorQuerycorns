@@ -32,4 +32,4 @@ class Response(BaseModel):
 
     title: str
     text: str
-    chart: BarChart | LineChart
+    chart: PieChart | LineChart
