@@ -1,0 +1,3 @@
+[submodule "northwind_psql"]
+	path = northwind_psql
+	url = https://github.com/juha-ylikoski/northwind_psql.git
