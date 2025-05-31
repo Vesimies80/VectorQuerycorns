@@ -9,10 +9,11 @@ from mcp.types import Resource
 # Create an MCP server
 mcp = FastMCP("northwind")
 
-DB_HOST = os.environ.get("DB_HOST", "127.0.0.1:55432")
+DB_HOST = os.environ.get("DB_HOST", "dataset:5432")
 DB_USER = os.environ.get("DB_USER", "postgres")
 DB_PASSWORD = os.environ.get("DB_USER", "postgres")
 DB_DATABASE = os.environ.get("DB_USER", "northwind")
+
 
 @contextmanager
 def context():
@@ -25,11 +26,14 @@ def context():
     finally:
         conn.close()
 
+
 @mcp.resource("config://northwind/schema")
 def get_config() -> list[tuple]:
     """Static schema for northwind database"""
     with context() as cursor:
-        cursor.execute("SELECT table_name, column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema = 'public'")
+        cursor.execute(
+            "SELECT table_name, column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema = 'public'"
+        )
         return cursor.fetchall()
 
 
@@ -49,11 +53,14 @@ def query_data(sql: str) -> dict[str, typing.Any]:
     finally:
         conn.close()
 
+
 @mcp.tool()
 async def list_resources() -> typing.List[Resource]:
-    """"Provides list of tables in the database"""
+    """ "Provides list of tables in the database"""
     try:
-        with psycopg2.connect(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_DATABASE}") as conn:
+        with psycopg2.connect(
+            f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_DATABASE}"
+        ) as conn:
             with conn.cursor() as cursor:
                 cursor.execute("""
                     SELECT table_name 
@@ -62,17 +69,16 @@ async def list_resources() -> typing.List[Resource]:
                 """)
                 tables = cursor.fetchall()
                 return [
-            Resource(
-                uri=f"postgresql://{table[0]}/data",
-                name=f"Table: {table[0]}",
-                mimeType="text/plain",
-                description=f"Data in table: {table[0]}"
-            )
-            for table in tables
-        ]
+                    Resource(
+                        uri=f"postgresql://{table[0]}/data",
+                        name=f"Table: {table[0]}",
+                        mimeType="text/plain",
+                        description=f"Data in table: {table[0]}",
+                    )
+                    for table in tables
+                ]
     except Exception as e:
         return {"error": str(e)}
-    
 
 
 @mcp.prompt()
