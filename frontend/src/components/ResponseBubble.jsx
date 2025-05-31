@@ -23,11 +23,11 @@ export default function ResponseBubble({ response }) {
       <div className="bg-white px-4 py-3 rounded-xl shadow inline-block w-fit break-words">
         {/* Header: title + collapse/expand toggle */}
         <div className="flex justify-between items-center">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+          <h3 className="font-semibold text-black">
             {response.title}
           </h3>
           <button
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 ml-2"
+            className="text-sm text-black hover:text-gray-700 ml-2"
             onClick={() => setCollapsed(!collapsed)}
           >
             {collapsed ? "Expand" : "Collapse"}
@@ -38,7 +38,7 @@ export default function ResponseBubble({ response }) {
         {!collapsed && (
           <div className="mt-2">
             {/* Response text */}
-            <p className="text-gray-700 dark:text-gray-200">
+            <p className="text-black">
               {response.text}
             </p>
 
