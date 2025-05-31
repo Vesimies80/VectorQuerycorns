@@ -4,7 +4,8 @@ WORKDIR /work
 
 COPY components.json jsconfig.json package-lock.json postcss.config.mjs tailwind.config.js eslint.config.mjs next.config.mjs package.json /work/
 RUN npm i
-ADD src public /work/
+ADD src /work/src
+ADD public /work/public
 
 RUN npm run build
 
