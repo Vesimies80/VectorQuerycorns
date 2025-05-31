@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "🦄 VectorQuerycorns",
+  title: "VectorQuerycorns",
   description: "Chat-style data analysis by VectorQuerycorns",
   /*
   icons: {
