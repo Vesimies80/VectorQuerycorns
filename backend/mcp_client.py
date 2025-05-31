@@ -40,7 +40,7 @@ class Chat:
 
         tools = await load_mcp_tools(session)
         agent = create_react_agent(
-            model="openai:gpt-4.5", tools=tools, prompt=self.system_prompt
+            model="openai:o4-mini-2025-04-16", tools=tools, prompt=self.system_prompt
         )
         res = await agent.ainvoke({"messages": self.messages})
 
