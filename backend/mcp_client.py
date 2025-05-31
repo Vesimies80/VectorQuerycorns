@@ -5,6 +5,8 @@ from langgraph.prebuilt import create_react_agent
 from langchain_mcp_adapters.tools import load_mcp_tools
 import asyncio
 
+from .data_format import Response
+
 server_params = StdioServerParameters(
     command="python",
     args=["mcp_server.py"],
@@ -35,13 +37,28 @@ class Chat:
         )
         res = await agent.ainvoke({"messages": self.messages})
 
-        outputmsg: list[ModelOutput] = []
+        outputmsg = []
 
         for key in res.keys():
             for msg in res[key]:
                 if msg.type == "ai" and msg.content != "":
                     print("AI response\n", msg.content)
-                    outputmsg.append(ModelOutput.model_validate_json(msg.content))
+                    try:
+                        out = ModelOutput.model_validate_json(msg.content)
+                        out = Response.model_validate(
+                            {
+                                "index": 42,
+                                "title": "ai response",
+                                "text": out.message,
+                                "chart": {
+                                    "chart_type": out.chart_type,
+                                    "series": out.values,
+                                },
+                            }
+                        )
+                        outputmsg.append(out)
+                    except Exception:
+                        outputmsg.append(msg.content)
                 # elif msg.type == "tool":
                 #    print("Used tool\n", msg.name)
                 elif msg.type == "human":

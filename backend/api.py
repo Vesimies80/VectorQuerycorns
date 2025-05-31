@@ -41,7 +41,7 @@ def login(user_id: int | None = None):
 
 
 @app.get("/proooompt")
-async def proompt(proooompt: str, user_id: int) -> Response:
+async def proompt(proooompt: str, user_id: int) -> Response | str:
     chat = Chat()
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
@@ -49,14 +49,4 @@ async def proompt(proooompt: str, user_id: int) -> Response:
             await session.initialize()
 
             output = await chat.process_query(session=session, query=proooompt)
-            return Response.model_validate(
-                {
-                    "index": 42,
-                    "title": "ai response",
-                    "text": output[0].message,
-                    "chart": {
-                        "chart_type": output[0].chart_type,
-                        "series": output[0].values,
-                    },
-                }
-            )
+            return output[0]
