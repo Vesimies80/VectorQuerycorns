@@ -7,6 +7,11 @@ import * as d3 from "d3";
 export default function ChartVisualization({ chart }) {
   const ref = useRef();
 
+  // If `chart` is null/undefined, render nothing
+  if (!chart) {
+    return <div />;
+  }
+
   useEffect(() => {
     const container = d3.select(ref.current);
     container.selectAll("*").remove(); // Clear previous drawings
@@ -29,8 +34,9 @@ export default function ChartVisualization({ chart }) {
       let xPos = margin.left;
       let yPos = height + margin.bottom;
       const padding = 8; // space between items
-      let maxY = yPos;
+      let legendRows = 0;
 
+      const items = [];
       labels.forEach((label, i) => {
         // Draw a temporary text to measure width
         const tempText = legendGroup
@@ -51,27 +57,23 @@ export default function ChartVisualization({ chart }) {
           yPos += 20; // row height
         }
 
-        // Draw swatch (could be rect or line depending on type)
-        // We decide swatch shape outside this helper
-        // Return positions for caller
-        const currentX = xPos;
-        const currentY = yPos;
+        // Track number of rows needed
+        if (legendRows < (yPos - (height + margin.bottom)) / 20 + 1) {
+          legendRows = (yPos - (height + margin.bottom)) / 20 + 1;
+        }
+
+        items.push({ label, x: xPos, y: yPos, textWidth });
 
         // Advance xPos for next label
         xPos += totalWidth + padding;
-        maxY = Math.max(maxY, yPos);
-
-        // Invoke a callback to actually render swatch and text
-        // The caller will handle shape-type differences
-        labels[i] = { label, x: currentX, y: currentY, textWidth };
       });
 
-      return { items: labels, height: maxY - (height + margin.bottom) + 20 };
+      return { items, height: legendRows * 20 };
     }
 
     // ── BAR CHART ──
     if (chart.chart_type === "bar") {
-      const data = Object.entries(chart.series).map(([label, value]) => ({ label, value }));
+      const data = Object.entries(chart.shards).map(([label, value]) => ({ label, value }));
 
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
@@ -112,7 +114,7 @@ export default function ChartVisualization({ chart }) {
         .attr("transform", `translate(${margin.left}, 0)`)  
         .call(d3.axisLeft(y));
 
-      // Only one legend entry; no need to wrap
+      // Single legend entry for bar color
       const legendGroup = svg
         .append("g")
         .attr("transform", `translate(${margin.left}, ${height + margin.bottom})`);
@@ -138,7 +140,7 @@ export default function ChartVisualization({ chart }) {
 
     // ── PIE CHART ──
     if (chart.chart_type === "pie") {
-      const data = Object.entries(chart.series).map(([label, value]) => ({ label, value }));
+      const data = Object.entries(chart.shards).map(([label, value]) => ({ label, value }));
       const radius = Math.min(width, height) / 2 - 20;
 
       const pieGenerator = d3.pie().value((d) => d.value);
@@ -160,13 +162,8 @@ export default function ChartVisualization({ chart }) {
       // Draw legend items with measured positions
       const labels = data.map((d) => d.label);
       const { items, height: legendHeight } = drawLegend(labels);
-      
-      const legendGroup = svg.selectAll("g").filter((d, i, nodes) => {
-        // Filter to newly created legend group
-        return true;
-      });
+      const legendGroup = svg.append("g");
 
-      // Render swatch and text for each legend item
       items.forEach((item) => {
         const { label, x, y } = item;
         // Draw swatch
@@ -198,9 +195,9 @@ export default function ChartVisualization({ chart }) {
 
     // ── LINE CHART ──
     if (chart.chart_type === "line") {
-      const seriesNames = Object.keys(chart.series);
+      const seriesNames = Object.keys(chart.series || {});
       const allData = seriesNames.flatMap((name) =>
-        chart.series[name].map((value, i) => ({
+        (chart.series[name] || []).map((value, i) => ({
           series: name,
           x: i + 1,
           y: value,
@@ -250,7 +247,7 @@ export default function ChartVisualization({ chart }) {
 
       // Draw legend items with measured positions
       const { items, height: legendHeight } = drawLegend(seriesNames);
-      const legendGroup = svg.selectAll("g");
+      const legendGroup = svg.append("g");
 
       items.forEach((item) => {
         const { label, x, y } = item;

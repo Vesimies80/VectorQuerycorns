@@ -11,7 +11,7 @@ import { getOrCreateUserId } from "../lib/auth";
 import { queryBackend } from "../lib/api";
 
 export default function Home() {
-  // 1) Dark mode state
+  // 1) Dark mode state (default false, will adjust in useEffect)
   const [darkMode, setDarkMode] = useState(false);
 
   // 2) userId (from localStorage or obtained via Header)
@@ -26,72 +26,75 @@ export default function Home() {
   // 5) ref to force scroll to bottom when new messages arrive
   const bottomRef = useRef(null);
 
-  //
-  // On mount: get or create a userId
-  //
+  // On mount: get darkMode preference and userId
   useEffect(() => {
+    // Retrieve darkMode from localStorage if available
+    const storedDark = localStorage.getItem("darkMode");
+    if (storedDark !== null) {
+      setDarkMode(storedDark === "true");
+      if (storedDark === "true") {
+        document.documentElement.classList.add("dark");
+      }
+    }
+
+    // Fetch or create userId
     (async () => {
       const id = await getOrCreateUserId();
       setUserId(id);
     })();
   }, []);
 
-  //
-  // Whenever darkMode toggles, add/remove "dark" class on <html>
-  //
+  // Whenever darkMode toggles, add/remove "dark" class and store preference
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
+      localStorage.setItem("darkMode", "true");
     } else {
       document.documentElement.classList.remove("dark");
+      localStorage.setItem("darkMode", "false");
     }
   }, [darkMode]);
 
-  //
   // Auto-scroll whenever conversations change
-  //
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations]);
 
-  //
   // Handle sending a new prompt to the backend
-  //
   const handleSend = async () => {
     if (!query.trim() || !userId) return;
 
-    // Compute the "local" index for this prompt (just the current length)
+    // Compute the "local" index for this prompt
     const localIndex = conversations.length;
 
-    // 1) Immediately append the user prompt (no response, but mark loading)
+    // 1) Append the user prompt, mark loading
     setConversations((prev) => [
       ...prev,
       {
         index: localIndex,
         prompt: query,
         response: null,
-        loading: true, // new flag
+        loading: true,
       },
     ]);
 
     setQuery("");
 
     try {
-      // 2) Call the real backend endpoint
-      const resp = await queryBackend({
-        index: localIndex,
-        prompt: query,
-        userId,
-      });
+      // 2) Call the backend
+      const resp = await queryBackend({ index: localIndex, prompt: query, userId });
 
-      // 3) Replace the loading placeholder with the real response
+      // Ensure resp is valid
+      if (!resp || typeof resp !== 'object') {
+        throw new Error('Invalid response format');
+      }
+
+      // 3) Replace loading placeholder with the real response
       setConversations((prev) => {
-        // Copy array
         const updated = [...prev];
-        // Overwrite the last element (the one we just pushed) with the real response
         const lastIdx = updated.length - 1;
         updated[lastIdx] = {
-          index: resp.index,
+          index: resp.index ?? localIndex,
           prompt: query,
           response: resp,
           loading: false,
@@ -101,7 +104,7 @@ export default function Home() {
     } catch (err) {
       console.error("[handleSend] queryBackend threw error:", err);
 
-      // 4) If the request fails, replace loading placeholder with an error bubble
+      // 4) Replace loading placeholder with an error
       setConversations((prev) => {
         const updated = [...prev];
         const lastIdx = updated.length - 1;
@@ -123,25 +126,25 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
-      {/* ───────── Header ───────── */}
+      {/* Header */}
       <Header
         darkMode={darkMode}
         onToggle={() => setDarkMode(!darkMode)}
         onLoginSuccess={(id) => setUserId(id)}
       />
 
-      {/* ── Scrollable Chat Area ── */}
+      {/* Scrollable Chat Area */}
       <div className="flex-grow overflow-y-auto px-4 py-2">
         {conversations.map((conv) => (
           <div key={conv.index}>
             {/* Right-aligned user prompt */}
-            <PromptBubble prompt={conv.prompt} />
+            {conv.prompt != null && <PromptBubble prompt={conv.prompt} />}
 
-            {/* If loading, show LoadingBubble */}
-            {conv.loading && <LoadingBubble />}
+            {/* If loading flag is true, show loading GIF */}
+            {conv.loading === true && <LoadingBubble />}
 
-            {/* If not loading and response is present, show ResponseBubble */}
-            {!conv.loading && conv.response && (
+            {/* If not loading and response exists, show ResponseBubble */}
+            {conv.loading !== true && conv.response && (
               <ResponseBubble response={conv.response} />
             )}
           </div>
@@ -150,7 +153,7 @@ export default function Home() {
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Chat Input (fixed at bottom) ── */}
+      {/* Chat Input (fixed at bottom) */}
       <div className="border-t bg-white dark:bg-gray-800 p-4">
         <ChatInput
           value={query}
