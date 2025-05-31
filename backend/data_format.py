@@ -5,17 +5,34 @@ class PieChart(BaseModel):
     chart_type = "pie"
     shards: dict[str, float]
 
-
 class LineChart(BaseModel):
     chart_type = "line"
     series: dict[str, list[float]]
+    
+class BarChart(BaseModel):
+    chart_type = "bar"
+    shards: dict[str, float]
+    
+class Request(BaseModel):
+    """Example:
 
+    ```
+    {
+      "index": 0,
+      "prompt": "bar",
+    }
+    ```
+
+    """
+    index: int
+    prompt: str
 
 class Response(BaseModel):
     """Example:
 
     ```
     {
+      "index": 0,
       "title": "foo",
       "text": "bar",
       "chart": {
@@ -29,7 +46,7 @@ class Response(BaseModel):
     ```
 
     """
-
+    index: int
     title: str
     text: str
-    chart: PieChart | LineChart
+    chart: PieChart | LineChart | BarChart
