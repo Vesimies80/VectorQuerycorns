@@ -35,4 +35,17 @@ services:
           target: /code/backend
         - action: rebuild
           path: requirements.json
+  ui:
+    build:
+      context: frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontent.rule=Host(`vectorquerycorns.org`)&&!PathPrefix(`/api`)"
+      - "traefik.http.routers.frontent.entrypoints=websecure"
+      - "traefik.http.routers.frontent.tls.certresolver=myresolver"
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend
+          target: /work
 
