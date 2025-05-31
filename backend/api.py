@@ -18,6 +18,7 @@ server_params = StdioServerParameters(
     args=["backend/mcp_server.py"],
 )
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(engine)
@@ -48,45 +49,14 @@ async def proompt(proooompt: str, user_id: int) -> Response:
             await session.initialize()
 
             output = await chat.process_query(session=session, query=proooompt)
-            print(output)
-            #Cursed atm
-            output = ''.join(output)
-    return random.choice(
-        [
-            Response(
-                index=42,
-                title="pie",
-                text=output,
-                chart=PieChart(
-                    chart_type="pie", series={"too little": 50.0, "too much": 50.0}
-                ),
-            ),
-            Response(
-                index=43,
-                title="line",
-                text=output,
-                chart=LineChart(
-                    chart_type="line",
-                    series={
-                        "serie1": [random.random() for _ in range(100)],
-                        "seri22": [random.random() for _ in range(100)],
+            return Response.model_validate(
+                {
+                    "index": 42,
+                    "title": "ai response",
+                    "text": output[0].message,
+                    "chart": {
+                        "chart_type": output[0].chart_type,
+                        "series": output[0].values,
                     },
-                ),
-            ),
-            Response(
-                index=43,
-                title="bar",
-                text=output,
-                chart=BarChart(
-                    chart_type="bar",
-                    series={
-                        "legend1": random.random(),
-                        "legend2": random.random(),
-                        "legend3": random.random(),
-                        "legend4": random.random(),
-                        "legend5": random.random(),
-                    },
-                ),
-            ),
-        ]
-    )
+                }
+            )
