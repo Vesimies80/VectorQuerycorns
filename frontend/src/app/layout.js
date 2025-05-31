@@ -16,11 +16,13 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "🦄 VectorQuerycorns",
   description: "Chat-style data analysis by VectorQuerycorns",
+  /*
   icons: {
     icon: './icon.ico',
     shortcut: './icon.ico',
     apple: './apple-icon.png',
   },
+  */
 };
 
 export default function RootLayout({ children }) {
