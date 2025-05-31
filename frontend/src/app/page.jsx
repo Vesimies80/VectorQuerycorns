@@ -24,7 +24,6 @@ export default function Home() {
 
   // 5) ref to force scroll to bottom when new messages arrive
   const bottomRef = useRef(null);
-
   //
   // On mount: get or create a userId
   //
