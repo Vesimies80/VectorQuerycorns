@@ -42,16 +42,26 @@ class LoginResponse(BaseModel):
 
 @app.get("/login")
 def login(user_id: int | None = None):
+    """Endpoint to create a user id for user.
+
+    In future this endpoint should have e.g. github OAuth for
+    user verification but for now, we just have random user ids.
+    """
     if not user_id:
         return LoginResponse(user_id=random.randint(1, 0xFFFFFFFFFFFFFF))
     else:
         return user_id
 
-#Function to connect client to server
+
+# Function to connect client to server
 @app.get("/proooompt")
 async def proompt(
     proooompt: str, user_id: int, db: Session = Depends(get_db)
 ) -> Response | OnlyTextResponse:
+    """Create a new prompt for northwind dataset.
+
+    This request might take a long time to succeed due to being done synchronously.
+    """
     chat = Chat()
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
@@ -84,7 +94,10 @@ async def proompt(
 
 
 @app.get("/previous/proooooooompts")
-def previous(user_id: int, db: Session = Depends(get_db)):
+def previous(
+    user_id: int, db: Session = Depends(get_db)
+) -> list[Response | OnlyTextResponse]:
+    """Query for users previous prompts and their responses."""
     out = []
     for proompt in db.execute(
         select(Proompt).where(Proompt.user_id == user_id)
