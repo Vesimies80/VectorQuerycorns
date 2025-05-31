@@ -24,6 +24,8 @@ Start the services with docker compose:
 docker compose up
 ```
 
+Then you should be able to navigate to (127.0.0.1:80)[127.0.0.1:80] to open the ui.
+
 **NOTE** please make sure you have initialized the dataset as submodule with `git submodule update --init`
 
 ## VectorQuerycorns Frontend 🦄
