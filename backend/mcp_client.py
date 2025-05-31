@@ -69,10 +69,10 @@ class Chat:
                             {
                                 "index":69,
                                 "title":out.title,
-                                "text":out.message
+                                "text":out.message,
                             }
                         )
-                        outputmsg.append(msg.content)        
+                        outputmsg.append(out)        
                 # elif msg.type == "tool":
                 #    print("Used tool\n", msg.name)
                 elif msg.type == "human":
