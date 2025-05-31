@@ -1,0 +1,35 @@
+High Level Architecture: {
+	shape: sequence_diagram
+
+	user {
+		shape: person
+	}
+	ui: UI
+	mcp_client: MCP client
+	mcp_server: MCP server
+	openai: OpenAI\no4-mini
+	database: Postgres Database
+
+
+	user --> ui: prompt
+	ui."1. User prompts the service for a question"
+
+	ui --> mcp_client
+	mcp_client."2. UI sends the prompt to backend"
+
+
+	mcp_client --> openai
+	openai."3. Backend creates a session with OpenAI"
+	"": {
+		openai."4. OpenAI starts to converse with the backend with MCP"
+		openai <--> mcp_server
+		mcp_server <--> database
+		openai <--> mcp_server
+	}
+	openai --> mcp_client: Result
+	mcp_client."5. OpenAI returns result to backend"
+	mcp_client --> ui
+	ui."6. Result is visualized to the user"
+	ui --> user: Result
+
+}
