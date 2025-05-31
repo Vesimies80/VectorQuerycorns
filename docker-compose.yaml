@@ -26,4 +26,13 @@ services:
       - "traefik.http.routers.backend.rule=Host(`vectorquerycorns.org`)&&PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.routers.backend.middlewares=api-stripprefix"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /code/backend
+        - action: rebuild
+          path: requirements.json
 
