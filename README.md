@@ -1,4 +1,7 @@
 # VectorQuerycorns 🦄
+
+[![Link to demo](./frontend/public/loading.gif)](https://vectorquerycorns.org/)]
+
 AI agent that can do complicated queries to answer the users question
 
 Link to our google slides where we have some basic info about this project and interesting queries if you missed them in our project description!
