@@ -18,7 +18,7 @@ engine = create_engine("sqlite:///./database.sqlite")
 Session = sessionmaker(engine)
 
 
-async def db():
+async def get_db():
     with Session() as session:
         try:
             yield session
@@ -33,6 +33,7 @@ class Base(DeclarativeBase):
 class ProomptSession(Base):
     __tablename__ = "proompt_session"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int]
     proompts: Mapped[List[Proompt]] = relationship(
         back_populates="session", cascade="all, delete-orphan"
     )
@@ -77,5 +78,5 @@ class MediaResponse(Base):
         return Response.model_validate(self.response_json)
 
     @response.setter
-    def respnse(self, value: Response):
+    def response_set(self, value: Response):
         self.response_json = value.model_dump()
