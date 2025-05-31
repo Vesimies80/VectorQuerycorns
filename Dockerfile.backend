@@ -11,5 +11,5 @@ COPY ./backend /code/backend
 
 EXPOSE 8080
 
-CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8080", "--access-log", "--root-path", "/api", "backend.api:app"]
+CMD ["uvicorn", "--host", "0.0.0.0", "--port", "8080", "--access-log", "--root-path", "/api", "--reload", "backend.api:app"]
 
