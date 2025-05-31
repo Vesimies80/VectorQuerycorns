@@ -62,29 +62,32 @@ async def proompt(
 
             output = await chat.process_query(session=session, query=proooompt)
             output = output[0]
-            with db:
-                if isinstance(output, str):
-                    proompt_session = ProomptSession(
-                        title="ai response",
-                        user_id=user_id,
-                        proomts=Proompt(
-                            index=0,
-                            question=proooompt,
-                            text_responses=TextResponse(index=1, response=output),
-                        ),
-                    )
-                else:
-                    proompt_session = ProomptSession(
-                        title="ai response",
-                        user_id=user_id,
-                        proomts=Proompt(
-                            index=0,
-                            question=proooompt,
-                            media_response=MediaResponse(index=1, response=output),
-                        ),
-                    )
-                db.add(proompt_session)
-                db.commit()
+            try:
+                with db:
+                    if isinstance(output, str):
+                        proompt_session = ProomptSession(
+                            title="ai response",
+                            user_id=user_id,
+                            proomts=Proompt(
+                                index=0,
+                                question=proooompt,
+                                text_responses=TextResponse(index=1, response=output),
+                            ),
+                        )
+                    else:
+                        proompt_session = ProomptSession(
+                            title="ai response",
+                            user_id=user_id,
+                            proomts=Proompt(
+                                index=0,
+                                question=proooompt,
+                                media_response=MediaResponse(index=1, response=output),
+                            ),
+                        )
+                    db.add(proompt_session)
+                    db.commit()
+            except Exception:
+                pass
             return output
 
 
