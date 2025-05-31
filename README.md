@@ -5,25 +5,48 @@ Link to our google slides where we have some basic info about this project and i
 [Link to google slides](https://docs.google.com/presentation/d/1lmrZfQ6yIltcm_q985mqo_saP6y-wPMPbO4fbmJZro4/edit?usp=sharing>)
 
 
+## Full deployment
 
-# VectorQuerycorns Frontend 🦄
+For you to get yor own service running on your own machine, you will need:
+
+- docker & docker compose https://docs.docker.com/get-started/get-docker/
+- openai api token. You will need to save this in a file called `.env` like below
+
+```
+OPENAI_API_KEY=<sanitized>
+```
+
+If anyone wants to try to set this up on their own machine, we can provide a token for limited use (until end of 2025/06/01).
+
+Start the services with docker compose:
+
+```
+docker compose up
+```
+
+
+## VectorQuerycorns Frontend 🦄
 
 Frontend: https://vectorquerycorns.org  
 Backend: https://vectorquerycorns.org/api/  
 Backend docs: https://vectorquerycorns.org/api/docs#/default  
 
-### Development Setup 
 
-    git clone https://github.com/Vesimies80/VectorQuerycorns.git
-    cd frontend
-    npm install
-    npm run dev
-    Open url: http://localhost:3000
+## Development Setup 
 
-### TL;DR
+```
+git clone https://github.com/Vesimies80/VectorQuerycorns.git
+cd frontend
+npm install
+npm run dev
+```
+
+Open url: (http://localhost:3000)[http://localhost:3000]
+
+## TL;DR
 The VectorQuerycorns frontend is a Next.js (v15) + Tailwind CSS chat‐style interface that connects to a FastAPI/OpenAI backend. On load, it retrieves a persistent userId (via /api/login) and fetches that user’s past prompts/responses (via /api/previous/proooooooompts), then displays them as right‐aligned prompt bubbles and left‐aligned response bubbles (responses may include charts rendered with D3). Users type or press Enter to send new prompts—the UI immediately shows a “loading” GIF until the backend reply arrives. Responses include a title, collapsible text, and an optional bar/pie/line chart (with dynamic, non‐overlapping legends for pie/line). Dark/light mode can be toggled (and is persisted in localStorage), and /api/* requests are automatically proxied to the FastAPI server via next.config.js.
     
-### TL;DR of Each File
+## TL;DR of Each File
 	•	layout.js: Sets page metadata, unicorn favicon, fonts, base Tailwind styles, and root structure.
 	•	page.js: Coordinates state (dark mode, userId, conversations), fetches history, and renders chat interface.
 	•	Header.js: Manages user authentication (via /api/login) and dark/light toggle UI.

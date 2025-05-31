@@ -1,0 +1,69 @@
+services:
+  traefik:
+    image: "traefik:v3.4"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.middlewares=api-stripprefix"
+      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
+    volumes:
+      - ./db:/code/db
+    environment:
+      DB_HOST: dataset:5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: northwind
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /code/backend
+        - action: rebuild
+          path: requirements.json
+  ui:
+    build:
+      context: frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontent.rule=!PathPrefix(`/api`)"
+      - "traefik.http.routers.frontent.entrypoints=web"
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend
+          target: /work
+  dataset:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: northwind
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgresql_bin:/usr/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
+      - ./northwind_psql/northwind.sql:/docker-entrypoint-initdb.d/northwind.sql
+      - ./northwind_psql/files:/files
+ 
+volumes:
+  postgresql_data:
+    driver: local
+  postgresql_bin:
+    driver: local
+
