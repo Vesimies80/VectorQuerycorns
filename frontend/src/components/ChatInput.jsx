@@ -2,6 +2,14 @@
 "use client";
 
 export default function ChatInput({ value, onChange, onSubmit, disabled }) {
+  // Handle Enter key
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !disabled) {
+      e.preventDefault();
+      onSubmit();
+    }
+  };
+
   return (
     <div className="flex items-center space-x-2">
       {/* Text Input Field */}
@@ -10,6 +18,7 @@ export default function ChatInput({ value, onChange, onSubmit, disabled }) {
         placeholder="Type your question..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={handleKeyDown}              // ← Enter key submits
         disabled={disabled}
         className="
           flex-grow px-3 py-2 border rounded-l-md focus:outline-none
