@@ -62,6 +62,7 @@ class Chat:
                                     "chart_type": out.chart_type,
                                     "series": out.values,
                                 },
+                                "prompt": query,
                             }
                         )
                         outputmsg.append(out)
@@ -72,6 +73,7 @@ class Chat:
                                 "index": 69,
                                 "title": out.title,
                                 "text": out.message,
+                                "prompt": query,
                             }
                         )
                         outputmsg.append(out)

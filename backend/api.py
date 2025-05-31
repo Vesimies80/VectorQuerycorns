@@ -97,6 +97,7 @@ def previous(user_id: int, db: Session = Depends(get_db)):
                     title=proompt.title,
                     text=proompt.response_text,
                     chart=proompt.response_json,
+                    prompt=proompt.question,
                 )
             )
         else:
@@ -105,6 +106,7 @@ def previous(user_id: int, db: Session = Depends(get_db)):
                     index=proompt.id,
                     title=proompt.title,
                     text=proompt.response_text,
+                    prompt=proompt.question,
                 )
             )
 
