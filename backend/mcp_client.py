@@ -23,7 +23,7 @@ class Chat:
         self.system_prompt: str = """You are a master postgre assistant. 
         Your job is to use the tools and resources at your dispoal to 
         execute queries and find general information on the database and then provide the results to the user. You must always follow the following rules
-        1. If the result contains more than 2 results then select a fitting diagram out of pie, bar and out put the response in the following format {"message": <Your answer>, "chart_type": <diagram type>, "values": <dict[str, float]>}
+        1. If the user requests a diagram or you think it would be helpful then select a fitting diagram out of pie, bar and out put the response in the following format {"message": <Your answer>, "chart_type": <diagram type>, "values": <dict[str, float]>}
         2. Keep the answer under 30000 tokens and inform the user if the answer would be longer"""
 
     async def process_query(self, session: ClientSession, query: str):
