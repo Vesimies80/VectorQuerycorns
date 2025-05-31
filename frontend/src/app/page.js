@@ -3,18 +3,28 @@
 
 import { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
-import ChatInput from "../components/ChatInput";
 import PromptBubble from "../components/PromptBubble";
 import ResponseBubble from "../components/ResponseBubble";
+import ChatInput from "../components/ChatInput";
+import { getOrCreateUserId } from "../lib/auth";
 import { queryBackend } from "../lib/api";
 
 export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
+  const [userId, setUserId] = useState(null);
   const [query, setQuery] = useState("");
   const [conversations, setConversations] = useState([]);
   const bottomRef = useRef(null);
 
-  // Toggle the `dark` class on <html>
+  // Fetch or create userId once on mount
+  useEffect(() => {
+    (async () => {
+      const id = await getOrCreateUserId();
+      setUserId(id);
+    })();
+  }, []);
+
+  // Apply Tailwind’s dark class
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -23,26 +33,22 @@ export default function Home() {
     }
   }, [darkMode]);
 
-  // Scroll to bottom whenever conversations change
+  // Auto-scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations]);
 
   const handleSend = async () => {
-    if (!query.trim()) return;
+    if (!query.trim() || !userId) return;
 
     const idx = conversations.length;
-    // 1. Add the user prompt locally
     setConversations((prev) => [
       ...prev,
       { index: idx, prompt: query, response: null },
     ]);
     setQuery("");
 
-    // 2. Call mock/backend
-    const data = await queryBackend({ index: idx, prompt: query });
-
-    // 3. Update the conversation with the returned response
+    const data = await queryBackend({ index: idx, prompt: query, userId });
     setConversations((prev) =>
       prev.map((conv) =>
         conv.index === data.index ? { ...conv, response: data } : conv
@@ -52,10 +58,12 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
-      {/* ─────── Header ─────── */}
-      <Header darkMode={darkMode} onToggle={() => setDarkMode(!darkMode)} />
+      <Header
+        darkMode={darkMode}
+        onToggle={() => setDarkMode(!darkMode)}
+        onLoginSuccess={(id) => setUserId(id)}
+      />
 
-      {/* ─── Messages scrollable area ─── */}
       <div className="flex-grow overflow-y-auto px-4 py-2">
         {conversations.map((conv) => (
           <div key={conv.index}>
@@ -66,12 +74,12 @@ export default function Home() {
         <div ref={bottomRef} />
       </div>
 
-      {/* ─── Chat input fixed at bottom ─── */}
       <div className="border-t bg-white dark:bg-gray-800 p-4">
         <ChatInput
           value={query}
           onChange={setQuery}
           onSubmit={handleSend}
+          disabled={!userId}
         />
       </div>
     </div>
