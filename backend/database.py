@@ -13,7 +13,7 @@ from sqlalchemy.types import JSON
 from .data_format import Response
 
 
-engine = create_engine("sqlite:///./database.sqlite")
+engine = create_engine("sqlite:///.db/database.sqlite")
 
 Session = sessionmaker(engine)
 
