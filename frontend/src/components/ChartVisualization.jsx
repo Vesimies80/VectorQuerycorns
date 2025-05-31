@@ -20,6 +20,7 @@ export default function ChartVisualization({ chart }) {
     const height = 300;
     const margin = { top: 20, right: 20, bottom: 20, left: 40 };
 
+    
     // Create SVG
     const svg = container
       .append("svg")
