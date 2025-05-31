@@ -25,8 +25,9 @@ class Chat:
         self.system_prompt: str = """You are a master postgre assistant. 
         Your job is to use the tools and resources at your dispoal to 
         execute queries and find general information on the database and then provide the results to the user. You must always follow the following rules
-        1. If the user requests a diagram or you think it would be helpful then select a fitting diagram out of pie, bar and out put the response in the following format {"message": <Your answer>, "chart_type": <diagram type>, "values": <dict[str, float]>}
-        2. Keep the answer under 30000 tokens and inform the user if the answer would be longer"""
+        1. If the user requests a diagram or you think it would be helpful then select a fitting diagram out of pie, bar and out put the response in the following format {"message": <Your answer>, "chart_type": <diagram type>, "values": <dict[str, float]>, "title": <a title for your answer>}
+        2. Keep the answer under 30000 tokens and inform the user if the answer would be longer
+        3. Always provide an answer with a title like described, provide it in the following format {"message": <Your answer>, "title": <a title for your answer>}"""
 
     async def process_query(self, session: ClientSession, query: str):
         self.messages.append({"type": "human", "content": query})
