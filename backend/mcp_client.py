@@ -3,6 +3,7 @@ from mcp.client.stdio import stdio_client
 from langgraph.prebuilt import create_react_agent
 from langchain_mcp_adapters.tools import load_mcp_tools
 import asyncio
+import numpy as np
 
 server_params = StdioServerParameters(
     command="python",
@@ -15,10 +16,17 @@ class Chat:
         Your job is to use the tools at your dispoal to execute SQL queries and provide the results to the user."""
     async def process_query(self, session: ClientSession, query: str):
         tools = await load_mcp_tools(session)
-        agent = create_react_agent("openai:gpt-4.1", tools)
+        agent = create_react_agent(model="openai:gpt-4.1", tools=tools,prompt=self.system_prompt)
         res = await agent.ainvoke({"messages":query})
-        print(res)
-                
+        #Dict
+        for key in res.keys():
+            for msg in res[key]:
+                if msg.type == "ai" and msg.content != "":
+                    print("AI response\n",msg.content)
+                elif msg.type == "tool":
+                    print("Used tool\n", msg.name)
+                elif msg.type == "human":
+                    print("Human prompt\n",msg.content)
     async def chat_loop(self, session: ClientSession):
         while True:
             query = input("\nQuery: ").strip()
