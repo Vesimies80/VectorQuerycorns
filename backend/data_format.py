@@ -41,3 +41,16 @@ class Response(BaseModel):
     title: str
     text: str
     chart: PieChart | LineChart | BarChart
+    
+class OnlyTextResponse(BaseModel):
+  """
+  Example:
+  {
+    "index":0,
+    "title":"foo",
+    "text": "bar
+  }
+  """
+  index: int
+  title: str
+  text:str
