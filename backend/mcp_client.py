@@ -22,18 +22,22 @@ class Chat:
         agent = create_react_agent(model="openai:gpt-4.1", tools=tools,prompt=self.system_prompt)
         res = await agent.ainvoke({"messages":self.messages})
 
+        outputmsg = []
+
         for key in res.keys():
             for msg in res[key]:
                 if msg.type == "ai" and msg.content != "":
                     print("AI response\n",msg.content)
+                    outputmsg.append(msg.content)
                 #elif msg.type == "tool":
                 #    print("Used tool\n", msg.name)
-                #elif msg.type == "human":
-                #    print("Human prompt\n",msg.content)
+                elif msg.type == "human":
+                    print("Human prompt\n",msg.content)
+        return outputmsg
     async def chat_loop(self, session: ClientSession):
         while True:
             query = input("\nQuery: ").strip()
-            self.messages.append(query)
+            #self.messages.append(query)
             await self.process_query(session, query)
             
     async def run(self):
@@ -44,5 +48,7 @@ class Chat:
 
                 await self.chat_loop(session)
 
-chat = Chat()
-asyncio.run(chat.run())
+
+if __name__ == "__main__":
+    chat = Chat()
+    asyncio.run(chat.run())
