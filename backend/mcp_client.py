@@ -19,9 +19,11 @@ class ModelOutput(BaseModel):
     title: str
     values: dict[str, float]
 
+
 class TextOutput(BaseModel):
     message: str
     title: str
+
 
 class Chat:
     def __init__(self):
@@ -50,7 +52,7 @@ class Chat:
                     print("AI response\n", msg.content)
                     try:
                         out = ModelOutput.model_validate_json(msg.content)
-                        
+
                         out = Response.model_validate(
                             {
                                 "index": 42,
@@ -67,12 +69,12 @@ class Chat:
                         out = TextOutput.model_validate_json(msg.content)
                         out = OnlyTextResponse.model_validate(
                             {
-                                "index":69,
-                                "title":out.title,
-                                "text":out.message,
+                                "index": 69,
+                                "title": out.title,
+                                "text": out.message,
                             }
                         )
-                        outputmsg.append(out)        
+                        outputmsg.append(out)
                 # elif msg.type == "tool":
                 #    print("Used tool\n", msg.name)
                 elif msg.type == "human":
@@ -97,4 +99,3 @@ class Chat:
 if __name__ == "__main__":
     chat = Chat()
     asyncio.run(chat.run())
-

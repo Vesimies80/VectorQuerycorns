@@ -30,51 +30,19 @@ class Base(DeclarativeBase):
     type_annotation_map = {dict[str, Any]: JSON}
 
 
-class ProomptSession(Base):
-    __tablename__ = "proompt_session"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[int]
-    proompts: Mapped[List[Proompt]] = relationship(
-        back_populates="session", cascade="all, delete-orphan"
-    )
-    text_responses: Mapped[List[TextResponse]] = relationship(
-        back_populates="session", cascade="all, delete-orphan"
-    )
-    media_responses: Mapped[List[MediaResponse]] = relationship(
-        back_populates="session", cascade="all, delete-orphan"
-    )
-    title: Mapped[str]
-    description: Mapped[str]
-
-
 class Proompt(Base):
     __tablename__ = "proompt"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    session_id: Mapped[int] = mapped_column(ForeignKey("proompt_session.id"))
-    session: Mapped[ProomptSession] = relationship(back_populates="proompts")
-    index: Mapped[int]
+    user_id: Mapped[int]
+    title: Mapped[str]
     question: Mapped[str]
-
-
-class TextResponse(Base):
-    __tablename__ = "text_response"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    session_id: Mapped[int] = mapped_column(ForeignKey("proompt_session.id"))
-    session: Mapped[ProomptSession] = relationship(back_populates="proompts")
-    index: Mapped[int]
-    response: Mapped[str]
-
-
-class MediaResponse(Base):
-    __tablename__ = "media_response"
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    session_id: Mapped[int] = mapped_column(ForeignKey("proompt_session.id"))
-    session: Mapped[ProomptSession] = relationship(back_populates="proompts")
-    index: Mapped[int]
-    response_json: Mapped[dict[str, Any]]
+    response_text: Mapped[str]
+    response_json: Mapped[dict[str, Any] | None]
 
     @hybrid_property
     def response(self):
+        if self.response_json is None:
+            return None
         return Response.model_validate(self.response_json)
 
     @response.setter
