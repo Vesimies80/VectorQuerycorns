@@ -5,7 +5,7 @@ from langgraph.prebuilt import create_react_agent
 from langchain_mcp_adapters.tools import load_mcp_tools
 import asyncio
 
-from .data_format import Response
+from .data_format import Response, OnlyTextResponse
 
 server_params = StdioServerParameters(
     command="python",
@@ -16,8 +16,12 @@ server_params = StdioServerParameters(
 class ModelOutput(BaseModel):
     message: str
     chart_type: str
+    title: str
     values: dict[str, float]
 
+class TextOutput(BaseModel):
+    message: str
+    title: str
 
 class Chat:
     def __init__(self):
@@ -46,10 +50,11 @@ class Chat:
                     print("AI response\n", msg.content)
                     try:
                         out = ModelOutput.model_validate_json(msg.content)
+                        
                         out = Response.model_validate(
                             {
                                 "index": 42,
-                                "title": "ai response",
+                                "title": out.title,
                                 "text": out.message,
                                 "chart": {
                                     "chart_type": out.chart_type,
@@ -59,7 +64,15 @@ class Chat:
                         )
                         outputmsg.append(out)
                     except Exception:
-                        outputmsg.append(msg.content)
+                        out = TextOutput.model_validate_json(msg.content)
+                        out = OnlyTextResponse.model_validate(
+                            {
+                                "index":69,
+                                "title":out.title,
+                                "text":out.message,
+                            }
+                        )
+                        outputmsg.append(out)        
                 # elif msg.type == "tool":
                 #    print("Used tool\n", msg.name)
                 elif msg.type == "human":

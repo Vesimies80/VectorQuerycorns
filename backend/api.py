@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from backend.data_format import Response
+from backend.data_format import Response, OnlyTextResponse
 
 from .database import (
     MediaResponse,
@@ -53,7 +53,7 @@ def login(user_id: int | None = None):
 @app.get("/proooompt")
 async def proompt(
     proooompt: str, user_id: int, db: Session = Depends(get_db)
-) -> Response | str:
+) -> Response | OnlyTextResponse:
     chat = Chat()
     async with stdio_client(server_params) as (read, write):
         async with ClientSession(read, write) as session:
