@@ -24,6 +24,7 @@ Start the services with docker compose:
 docker compose up
 ```
 
+**NOTE** please make sure you have initialized the dataset as submodule with `git submodule update --init`
 
 ## VectorQuerycorns Frontend 🦄
 
