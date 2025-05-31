@@ -16,8 +16,12 @@ server_params = StdioServerParameters(
 class ModelOutput(BaseModel):
     message: str
     chart_type: str
+    title: str
     values: dict[str, float]
 
+class TextOutput(BaseModel):
+    message: str
+    title: str
 
 class Chat:
     def __init__(self):
@@ -44,33 +48,31 @@ class Chat:
             for msg in res[key]:
                 if msg.type == "ai" and msg.content != "":
                     print("AI response\n", msg.content)
-                    out = ModelOutput.model_validate_json(msg.content)
-                    if "chart_type" in out:
-                        try:
-                            
-                            
-                            out = Response.model_validate(
-                                {
-                                    "index": 42,
-                                    "title": out.title,
-                                    "text": out.message,
-                                    "chart": {
-                                        "chart_type": out.chart_type,
-                                        "series": out.values,
-                                    },
-                                }
-                            )
-                            outputmsg.append(out)
-                        except Exception:
-                            outputmsg.append(msg.content)
-                    else:
+                    try:
+                        out = ModelOutput.model_validate_json(msg.content)
+                        
+                        out = Response.model_validate(
+                            {
+                                "index": 42,
+                                "title": out.title,
+                                "text": out.message,
+                                "chart": {
+                                    "chart_type": out.chart_type,
+                                    "series": out.values,
+                                },
+                            }
+                        )
+                        outputmsg.append(out)
+                    except Exception:
+                        out = TextOutput.model_validate_json(msg.content)
                         out = OnlyTextResponse.model_validate(
                             {
                                 "index":69,
                                 "title":out.title,
-                                "text":out.message,
+                                "text":out.message
                             }
                         )
+                        outputmsg.append(msg.content)        
                 # elif msg.type == "tool":
                 #    print("Used tool\n", msg.name)
                 elif msg.type == "human":
