@@ -1,8 +1,8 @@
-# VectorQuerycorns Frontend
+# VectorQuerycorns Frontend 🦄
 
-Frontend: https://vectorquerycorns.org
-Backend: https://vectorquerycorns.org/api/
-Backend docs: https://vectorquerycorns.org/api/docs#/default
+Frontend: https://vectorquerycorns.org  
+Backend: https://vectorquerycorns.org/api/  
+Backend docs: https://vectorquerycorns.org/api/docs#/default  
 
 ### Development Setup 
 

@@ -1,4 +1,4 @@
-# VectorQuerycorns-
+# VectorQuerycorns 🦄
 AI agent that can do complicated queries to answer the users question
 
 Link to our google slides where we have some basic info about this project and interesting queries if you missed them in our project description!
@@ -6,11 +6,11 @@ Link to our google slides where we have some basic info about this project and i
 
 
 
-# VectorQuerycorns Frontend
+# VectorQuerycorns Frontend 🦄
 
-Frontend: https://vectorquerycorns.org
-Backend: https://vectorquerycorns.org/api/
-Backend docs: https://vectorquerycorns.org/api/docs#/default
+Frontend: https://vectorquerycorns.org  
+Backend: https://vectorquerycorns.org/api/  
+Backend docs: https://vectorquerycorns.org/api/docs#/default  
 
 ### Development Setup 
 
