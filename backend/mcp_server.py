@@ -4,6 +4,7 @@ import os
 import typing
 import psycopg2
 from mcp.server.fastmcp import FastMCP
+from mcp.types import Resource
 
 # Create an MCP server
 mcp = FastMCP("northwind")
@@ -14,7 +15,7 @@ DB_PASSWORD = os.environ.get("DB_USER", "postgres")
 DB_DATABASE = os.environ.get("DB_USER", "northwind")
 
 @contextmanager
-def context()
+def context():
     conn = psycopg2.connect(
         f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_DATABASE}"
     )
@@ -36,12 +37,42 @@ def get_config() -> list[tuple]:
 def query_data(sql: str) -> dict[str, typing.Any]:
     """Execute SQL queries safely"""
     logging.info(f"Executing SQL query: {sql}")
+    conn = psycopg2.connect(
+        f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_DATABASE}"
+    )
     try:
-        with context() as cursor:
-            cursor.execute(sql)
-            return {"result": cursor.fetchall()}
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        return {"result": cursor.fetchall()}
     except Exception as e:
         return {"error": str(e)}
+    finally:
+        conn.close()
+
+@mcp.tool()
+async def list_resources() -> typing.List[Resource]:
+    """"Provides list of tables in the database"""
+    try:
+        with psycopg2.connect(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_DATABASE}") as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    SELECT table_name 
+                    FROM information_schema.tables 
+                    WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+                """)
+                tables = cursor.fetchall()
+                return [
+            Resource(
+                uri=f"postgresql://{table[0]}/data",
+                name=f"Table: {table[0]}",
+                mimeType="text/plain",
+                description=f"Data in table: {table[0]}"
+            )
+            for table in tables
+        ]
+    except Exception as e:
+        return {"error": str(e)}
+    
 
 
 @mcp.prompt()
