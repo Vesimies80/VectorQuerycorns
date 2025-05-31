@@ -60,29 +60,30 @@ export default function Home() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations]);
 
-  // ── New: Fetch previous responses once userId is available ──
+  // ── New: Fetch previous conversations once userId is available ──
   useEffect(() => {
     if (!userId) return;
 
     (async () => {
       try {
-        // 1) Call fetchPreviousPrompts and get an array of items
+        // 1) Call fetchPreviousPrompts and get an array
         const prevArray = await fetchPreviousPrompts(userId);
-
-        // 2) Map each item into our conversation shape:
-        //    { index, prompt: null, response: item, loading: false }
+        // 2) Map each item into our conversation shape, including its prompt
         const mapped = prevArray.map((item) => ({
           index: item.index,
-          prompt: null,
-          response: item,
+          prompt: item.prompt ?? null,
+          response: {
+            index: item.index,
+            title: item.title,
+            text: item.text,
+            chart: item.chart ?? null,
+          },
           loading: false,
         }));
-
-        // 3) Set the conversations state to that mapped array
+        // 3) Populate the state
         setConversations(mapped);
       } catch (err) {
         console.error("Error loading previous conversations:", err);
-        // If fetch fails, we simply leave conversations as empty array
       }
     })();
   }, [userId]);
