@@ -113,7 +113,7 @@ uvicorn backend.api:app --reload
 ```
 - In a separate terminal, start the MCP server:
 ```
-python -m backend.mcp_server
+python -m backend
 ```
 
 
