@@ -73,7 +73,7 @@ export default function ChartVisualization({ chart }) {
 
     // ── BAR CHART ──
     if (chart.chart_type === "bar") {
-      const data = Object.entries(chart.shards).map(([label, value]) => ({ label, value }));
+      const data = Object.entries(chart.series).map(([label, value]) => ({ label, value }));
 
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
@@ -140,7 +140,7 @@ export default function ChartVisualization({ chart }) {
 
     // ── PIE CHART ──
     if (chart.chart_type === "pie") {
-      const data = Object.entries(chart.shards).map(([label, value]) => ({ label, value }));
+      const data = Object.entries(chart.series).map(([label, value]) => ({ label, value }));
       const radius = Math.min(width, height) / 2 - 20;
 
       const pieGenerator = d3.pie().value((d) => d.value);
