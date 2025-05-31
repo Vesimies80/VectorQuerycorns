@@ -26,7 +26,7 @@ If anyone wants to try to set this up on their own machine, we can provide a tok
 Start the services with docker compose:
 
 ```
-docker compose up
+docker compose -f docker-compose.demo.yaml up
 ```
 
 Then you should be able to navigate to [127.0.0.1:80](http://127.0.0.1:80) to open the ui.
@@ -75,7 +75,7 @@ git submodule update --init
 - Open a terminal and navigate to the project root (where docker-compose.yml resides).  
 - Run:  
 ```
-docker compose up
+docker compose -f docker-compose.demo.yaml up
 ```
 - After a few moments, both the backend (FastAPI + MCP server) and the frontend (Next.js) will be up and running.  
 - Open your browser and navigate to http://127.0.0.1:80 to access the UI.  
