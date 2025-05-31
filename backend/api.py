@@ -5,6 +5,7 @@ from fastapi import Depends, FastAPI
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+import json
 
 from backend.data_format import Response, OnlyTextResponse
 
@@ -73,7 +74,7 @@ async def proompt(
                         title=output.title,
                         question=proooompt,
                         response_text=output.text,
-                        response=output.chart,
+                        response_json=output.chart.model_dump(),
                     )
                 db.add(prompt)
                 db.commit()
