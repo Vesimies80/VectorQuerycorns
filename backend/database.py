@@ -48,3 +48,6 @@ class Proompt(Base):
     @response.setter
     def response_set(self, value: Response):
         self.response_json = value.model_dump()
+
+    def __repr__(self) -> str:
+        return f"Proompt(id={self.id}, user_id={self.user_id}, title={self.title}, question={self.question}, response_text={self.response_text}, response_json={self.response_json})"

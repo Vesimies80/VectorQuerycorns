@@ -89,7 +89,8 @@ def previous(user_id: int, db: Session = Depends(get_db)):
     for proompt in db.execute(
         select(Proompt).where(Proompt.user_id == user_id)
     ).scalars():
-        if proompt.response:
+        print(proompt)
+        if proompt.response_json:
             out.append(
                 Response(
                     index=proompt.id,
