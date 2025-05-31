@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import Header from "../components/Header";
 import PromptBubble from "../components/PromptBubble";
 import ResponseBubble from "../components/ResponseBubble";
+import LoadingBubble from "../components/LoadingBubble";
 import ChatInput from "../components/ChatInput";
 import { getOrCreateUserId } from "../lib/auth";
 import { queryBackend } from "../lib/api";
@@ -19,18 +20,18 @@ export default function Home() {
   // 3) Chat input value
   const [query, setQuery] = useState("");
 
-  // 4) Array of conversations: { index, prompt, response }
+  // 4) Array of conversations: { index, prompt, response?, loading? }
   const [conversations, setConversations] = useState([]);
 
   // 5) ref to force scroll to bottom when new messages arrive
   const bottomRef = useRef(null);
+
   //
   // On mount: get or create a userId
   //
   useEffect(() => {
     (async () => {
       const id = await getOrCreateUserId();
-      console.log("[Home] Using existing userId from localStorage:", id);
       setUserId(id);
     })();
   }, []);
@@ -62,18 +63,18 @@ export default function Home() {
     // Compute the "local" index for this prompt (just the current length)
     const localIndex = conversations.length;
 
-    // 1) Immediately append the user prompt with a null response
+    // 1) Immediately append the user prompt (no response, but mark loading)
     setConversations((prev) => [
       ...prev,
-      { index: localIndex, prompt: query, response: null },
+      {
+        index: localIndex,
+        prompt: query,
+        response: null,
+        loading: true, // new flag
+      },
     ]);
-    setQuery("");
 
-    console.log("[handleSend] calling queryBackend with:", {
-      index: localIndex,
-      prompt: query,
-      userId,
-    });
+    setQuery("");
 
     try {
       // 2) Call the real backend endpoint
@@ -82,42 +83,39 @@ export default function Home() {
         prompt: query,
         userId,
       });
-      console.log("[handleSend] got backend response:", resp);
 
-      // 3) Instead of matching by resp.index (which might not equal localIndex),
-      //    attach this resp object to the LAST conversation in the array.
+      // 3) Replace the loading placeholder with the real response
       setConversations((prev) => {
-        // Make a shallow copy
+        // Copy array
         const updated = [...prev];
-        // Overwrite the last element's `response` field with our `resp` object
+        // Overwrite the last element (the one we just pushed) with the real response
         const lastIdx = updated.length - 1;
-        if (lastIdx >= 0) {
-          updated[lastIdx] = {
-            ...updated[lastIdx],
-            response: resp,
-          };
-        }
-        console.log("[handleSend] updated conversations:", updated);
+        updated[lastIdx] = {
+          index: resp.index,
+          prompt: query,
+          response: resp,
+          loading: false,
+        };
         return updated;
       });
     } catch (err) {
       console.error("[handleSend] queryBackend threw error:", err);
 
-      // 4) If the request fails, set an “error” response on the last conversation
+      // 4) If the request fails, replace loading placeholder with an error bubble
       setConversations((prev) => {
         const updated = [...prev];
         const lastIdx = updated.length - 1;
-        if (lastIdx >= 0) {
-          updated[lastIdx] = {
-            ...updated[lastIdx],
-            response: {
-              index: localIndex,
-              title: "Error",
-              text: "Failed to fetch response from server.",
-              chart: null,
-            },
-          };
-        }
+        updated[lastIdx] = {
+          index: localIndex,
+          prompt: query,
+          response: {
+            index: localIndex,
+            title: "Error",
+            text: "Failed to fetch response from server.",
+            chart: null,
+          },
+          loading: false,
+        };
         return updated;
       });
     }
@@ -129,26 +127,26 @@ export default function Home() {
       <Header
         darkMode={darkMode}
         onToggle={() => setDarkMode(!darkMode)}
-        onLoginSuccess={(id) => {
-          console.log("[Home] Received new userId from Header:", id);
-          setUserId(id);
-        }}
+        onLoginSuccess={(id) => setUserId(id)}
       />
 
       {/* ── Scrollable Chat Area ── */}
       <div className="flex-grow overflow-y-auto px-4 py-2">
-        {conversations.map((conv) => {
-          console.log("Rendering conversation:", conv);
-          return (
-            <div key={conv.index}>
-              {/* Right-aligned user prompt */}
-              <PromptBubble prompt={conv.prompt} />
+        {conversations.map((conv) => (
+          <div key={conv.index}>
+            {/* Right-aligned user prompt */}
+            <PromptBubble prompt={conv.prompt} />
 
-              {/* Left-aligned server response (only appears if `conv.response` is non-null) */}
-              {conv.response && <ResponseBubble response={conv.response} />}
-            </div>
-          );
-        })}
+            {/* If loading, show LoadingBubble */}
+            {conv.loading && <LoadingBubble />}
+
+            {/* If not loading and response is present, show ResponseBubble */}
+            {!conv.loading && conv.response && (
+              <ResponseBubble response={conv.response} />
+            )}
+          </div>
+        ))}
+
         <div ref={bottomRef} />
       </div>
 

@@ -13,23 +13,65 @@ export default function ChartVisualization({ chart }) {
 
     const width = 500;
     const height = 300;
-    const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+    const margin = { top: 20, right: 20, bottom: 20, left: 40 };
 
     // Create SVG
     const svg = container
       .append("svg")
       .attr("width", width)
-      .attr("height", height + 60); // extra space for legend
+      .attr("height", height + 100); // initial extra space, may adjust
 
-    // Color scale (shared by pie & line legends)
     const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // Helper to draw legend items without overlap
+    function drawLegend(labels) {
+      const legendGroup = svg.append("g");
+      let xPos = margin.left;
+      let yPos = height + margin.bottom;
+      const padding = 8; // space between items
+      let maxY = yPos;
+
+      labels.forEach((label, i) => {
+        // Draw a temporary text to measure width
+        const tempText = legendGroup
+          .append("text")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("font-size", "12px")
+          .text(label);
+        const textWidth = tempText.node().getBBox().width;
+        tempText.remove();
+
+        const swatchWidth = 12;
+        const totalWidth = swatchWidth + 4 + textWidth;
+
+        // If exceeds available width, wrap to next row
+        if (xPos + totalWidth > width - margin.right) {
+          xPos = margin.left;
+          yPos += 20; // row height
+        }
+
+        // Draw swatch (could be rect or line depending on type)
+        // We decide swatch shape outside this helper
+        // Return positions for caller
+        const currentX = xPos;
+        const currentY = yPos;
+
+        // Advance xPos for next label
+        xPos += totalWidth + padding;
+        maxY = Math.max(maxY, yPos);
+
+        // Invoke a callback to actually render swatch and text
+        // The caller will handle shape-type differences
+        labels[i] = { label, x: currentX, y: currentY, textWidth };
+      });
+
+      return { items: labels, height: maxY - (height + margin.bottom) + 20 };
+    }
 
     // ── BAR CHART ──
     if (chart.chart_type === "bar") {
-      const data = Object.entries(chart.series).map(([label, value]) => ({
-        label,
-        value,
-      }));
+      const data = Object.entries(chart.series).map(([label, value]) => ({ label, value }));
 
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
@@ -46,7 +88,6 @@ export default function ChartVisualization({ chart }) {
         .nice()
         .range([margin.top + innerHeight, margin.top]);
 
-      // Draw bars
       svg
         .append("g")
         .selectAll("rect")
@@ -58,7 +99,6 @@ export default function ChartVisualization({ chart }) {
         .attr("height", (d) => margin.top + innerHeight - y(d.value))
         .attr("fill", "steelblue");
 
-      // X‐axis
       svg
         .append("g")
         .attr("transform", `translate(0, ${margin.top + innerHeight})`)
@@ -67,19 +107,15 @@ export default function ChartVisualization({ chart }) {
         .attr("transform", "rotate(-20)")
         .style("text-anchor", "end");
 
-      // Y‐axis
       svg
         .append("g")
-        .attr("transform", `translate(${margin.left}, 0)`)
+        .attr("transform", `translate(${margin.left}, 0)`)  
         .call(d3.axisLeft(y));
 
-      // Legend: Since all bars are same color, show just a label
+      // Only one legend entry; no need to wrap
       const legendGroup = svg
         .append("g")
-        .attr(
-          "transform",
-          `translate(${margin.left}, ${height + margin.bottom - 20})`
-        );
+        .attr("transform", `translate(${margin.left}, ${height + margin.bottom})`);
 
       legendGroup
         .append("rect")
@@ -102,24 +138,16 @@ export default function ChartVisualization({ chart }) {
 
     // ── PIE CHART ──
     if (chart.chart_type === "pie") {
-      const data = Object.entries(chart.series).map(([label, value]) => ({
-        label,
-        value,
-      }));
+      const data = Object.entries(chart.series).map(([label, value]) => ({ label, value }));
       const radius = Math.min(width, height) / 2 - 20;
 
       const pieGenerator = d3.pie().value((d) => d.value);
       const arcGenerator = d3.arc().innerRadius(0).outerRadius(radius);
 
-      // Group for pie, centered
       const pieGroup = svg
         .append("g")
-        .attr(
-          "transform",
-          `translate(${width / 2}, ${height / 2 - 20})`
-        );
+        .attr("transform", `translate(${width / 2}, ${height / 2 - 20})`);
 
-      // Draw slices
       pieGroup
         .selectAll("path")
         .data(pieGenerator(data))
@@ -129,35 +157,41 @@ export default function ChartVisualization({ chart }) {
         .attr("stroke", "#fff")
         .attr("stroke-width", 1);
 
-      // Legend group (below chart)
-      const legendGroup = svg.append("g").attr(
-        "transform",
-        `translate(${margin.left}, ${height + 10})`
-      );
+      // Draw legend items with measured positions
+      const labels = data.map((d) => d.label);
+      const { items, height: legendHeight } = drawLegend(labels);
+      
+      const legendGroup = svg.selectAll("g").filter((d, i, nodes) => {
+        // Filter to newly created legend group
+        return true;
+      });
 
-      data.forEach((d, i) => {
-        const legendRow = legendGroup
-          .append("g")
-          .attr("transform", `translate(${i * 120}, 0)`);
-
-        // Colored swatch
-        legendRow
+      // Render swatch and text for each legend item
+      items.forEach((item) => {
+        const { label, x, y } = item;
+        // Draw swatch
+        legendGroup
           .append("rect")
-          .attr("x", 0)
-          .attr("y", 0)
+          .attr("x", x)
+          .attr("y", y)
           .attr("width", 12)
           .attr("height", 12)
-          .attr("fill", color(d.label));
+          .attr("fill", color(label));
 
-        // Label text
-        legendRow
+        // Draw text
+        legendGroup
           .append("text")
-          .attr("x", 18)
-          .attr("y", 10)
+          .attr("x", x + 18)
+          .attr("y", y + 10)
           .attr("font-size", "12px")
           .attr("fill", "#000")
-          .text(d.label);
+          .text(label);
       });
+
+      // Adjust SVG height if multiple legend rows
+      if (legendHeight > 20) {
+        svg.attr("height", height + margin.bottom + legendHeight + 10);
+      }
 
       return;
     }
@@ -187,7 +221,6 @@ export default function ChartVisualization({ chart }) {
         .nice()
         .range([margin.top + innerHeight, margin.top]);
 
-      // Draw lines
       const lineGen = d3
         .line()
         .x((d) => x(d.x))
@@ -205,51 +238,45 @@ export default function ChartVisualization({ chart }) {
           .attr("d", lineGen);
       });
 
-      // X‐axis
       svg
         .append("g")
-        .attr(
-          "transform",
-          `translate(0, ${margin.top + innerHeight})`
-        )
+        .attr("transform", `translate(0, ${margin.top + innerHeight})`)
         .call(d3.axisBottom(x).ticks(seriesNames.length));
 
-      // Y‐axis
       svg
         .append("g")
-        .attr("transform", `translate(${margin.left}, 0)`)
+        .attr("transform", `translate(${margin.left}, 0)`)  
         .call(d3.axisLeft(y));
 
-      // Legend (below chart)
-      const legendGroup = svg.append("g").attr(
-        "transform",
-        `translate(${margin.left}, ${height + 10})`
-      );
+      // Draw legend items with measured positions
+      const { items, height: legendHeight } = drawLegend(seriesNames);
+      const legendGroup = svg.selectAll("g");
 
-      seriesNames.forEach((name, i) => {
-        const legendRow = legendGroup
-          .append("g")
-          .attr("transform", `translate(${i * 120}, 0)`);
-
-        // Colored line swatch
-        legendRow
+      items.forEach((item) => {
+        const { label, x, y } = item;
+        // Draw line swatch
+        legendGroup
           .append("line")
-          .attr("x1", 0)
-          .attr("y1", 6)
-          .attr("x2", 18)
-          .attr("y2", 6)
-          .attr("stroke", color(name))
+          .attr("x1", x)
+          .attr("y1", y + 6)
+          .attr("x2", x + 18)
+          .attr("y2", y + 6)
+          .attr("stroke", color(label))
           .attr("stroke-width", 2);
 
-        // Label text
-        legendRow
+        // Draw text
+        legendGroup
           .append("text")
-          .attr("x", 22)
-          .attr("y", 10)
+          .attr("x", x + 22)
+          .attr("y", y + 10)
           .attr("font-size", "12px")
           .attr("fill", "#000")
-          .text(name);
+          .text(label);
       });
+
+      if (legendHeight > 20) {
+        svg.attr("height", height + margin.bottom + legendHeight + 10);
+      }
 
       return;
     }
