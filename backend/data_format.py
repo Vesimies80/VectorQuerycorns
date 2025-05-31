@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class PieChart(BaseModel):
     chart_type: Literal["pie"]
-    shards: dict[str, float]
+    series: dict[str, float]
 
 
 class LineChart(BaseModel):
@@ -14,7 +14,7 @@ class LineChart(BaseModel):
 
 class BarChart(BaseModel):
     chart_type: Literal["bar"]
-    shards: dict[str, float]
+    series: dict[str, float]
 
 
 class Response(BaseModel):
