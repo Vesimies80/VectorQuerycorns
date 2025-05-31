@@ -65,3 +65,9 @@ services:
       - ./northwind_psql/northwind.sql:/docker-entrypoint-initdb.d/northwind.sql
       - ./northwind_psql/files:/files
  
+volumes:
+  postgresql_data:
+    driver: local
+  postgresql_bin:
+    driver: local
+
