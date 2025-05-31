@@ -1,31 +1,21 @@
+from typing import Literal
 from pydantic import BaseModel
 
 
 class PieChart(BaseModel):
-    chart_type = "pie"
+    chart_type: Literal["pie"]
     shards: dict[str, float]
+
 
 class LineChart(BaseModel):
-    chart_type = "line"
+    chart_type: Literal["line"]
     series: dict[str, list[float]]
-    
+
+
 class BarChart(BaseModel):
-    chart_type = "bar"
+    chart_type: Literal["bar"]
     shards: dict[str, float]
-    
-class Request(BaseModel):
-    """Example:
 
-    ```
-    {
-      "index": 0,
-      "prompt": "bar",
-    }
-    ```
-
-    """
-    index: int
-    prompt: str
 
 class Response(BaseModel):
     """Example:
@@ -46,6 +36,7 @@ class Response(BaseModel):
     ```
 
     """
+
     index: int
     title: str
     text: str
