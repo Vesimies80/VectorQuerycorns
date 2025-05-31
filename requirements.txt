@@ -2,3 +2,5 @@ psycopg2-binary==2.9.10
 mcp==1.9.2
 fastapi
 sqlalchemy==2.0.41
+langgraph==0.4.7
+langchain-mcp-adapters==0.1.4
