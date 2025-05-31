@@ -12,19 +12,19 @@ server_params = StdioServerParameters(
     args=["mcp_server.py"],
 )
 
-
+#Output for diagrams
 class ModelOutput(BaseModel):
     message: str
     chart_type: str
     title: str
     values: dict[str, float]
 
-
+#Output for text only
 class TextOutput(BaseModel):
     message: str
     title: str
 
-
+#Class to handle mcp and agent interaction
 class Chat:
     def __init__(self):
         self.messages = []
@@ -38,6 +38,7 @@ class Chat:
     async def process_query(self, session: ClientSession, query: str):
         self.messages.append({"type": "human", "content": query})
 
+        #Load mcp tools and create AI agent
         tools = await load_mcp_tools(session)
         agent = create_react_agent(
             model="openai:o4-mini-2025-04-16", tools=tools, prompt=self.system_prompt
@@ -50,6 +51,7 @@ class Chat:
             for msg in res[key]:
                 if msg.type == "ai" and msg.content != "":
                     print("AI response\n", msg.content)
+                    #Try to make a diagram, if fail then make text only output
                     try:
                         out = ModelOutput.model_validate_json(msg.content)
 
@@ -77,18 +79,21 @@ class Chat:
                             }
                         )
                         outputmsg.append(out)
+                # Debug prints
                 # elif msg.type == "tool":
                 #    print("Used tool\n", msg.name)
                 elif msg.type == "human":
                     print("Human prompt\n", msg.content)
         return outputmsg
 
+    #Testing function to run locally
     async def chat_loop(self, session: ClientSession):
         while True:
             query = input("\nQuery: ").strip()
             # self.messages.append(query)
             await self.process_query(session, query)
-
+            
+    #Testing function to run locally
     async def run(self):
         async with stdio_client(server_params) as (read, write):
             async with ClientSession(read, write) as session:

@@ -47,7 +47,7 @@ def login(user_id: int | None = None):
     else:
         return user_id
 
-
+#Function to connect client to server
 @app.get("/proooompt")
 async def proompt(
     proooompt: str, user_id: int, db: Session = Depends(get_db)
