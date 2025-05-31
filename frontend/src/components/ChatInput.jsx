@@ -3,9 +3,9 @@ export default function ChatInput({ value, onChange, onSubmit }) {
     <div className="flex">
       <input
         type="text"
-        placeholder="Ask a data question..."
+        placeholder="Type your question..."
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         className="flex-grow p-3 border rounded-l-md focus:outline-none"
       />
       <button

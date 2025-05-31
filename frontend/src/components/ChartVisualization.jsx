@@ -17,9 +17,12 @@ export default function ChartVisualization({ chart }) {
       .attr("width", width)
       .attr("height", height);
 
+    // BAR CHART (chart_type === "bar")
     if (chart.chart_type === "bar") {
-      // convert shards to array
-      const data = Object.entries(chart.shards).map(([label, value]) => ({ label, value }));
+      const data = Object.entries(chart.shards).map(([label, value]) => ({
+        label,
+        value,
+      }));
 
       const x = d3
         .scaleBand()
@@ -52,9 +55,12 @@ export default function ChartVisualization({ chart }) {
       svg.append("g").call(d3.axisLeft(y));
     }
 
+    // PIE CHART (chart_type === "pie")
     else if (chart.chart_type === "pie") {
-      // convert shards to array
-      const data = Object.entries(chart.shards).map(([label, value]) => ({ label, value }));
+      const data = Object.entries(chart.shards).map(([label, value]) => ({
+        label,
+        value,
+      }));
       const radius = Math.min(width, height) / 2;
       const color = d3
         .scaleOrdinal()
@@ -78,8 +84,8 @@ export default function ChartVisualization({ chart }) {
         .attr("stroke-width", 1);
     }
 
+    // LINE CHART (chart_type === "line")
     else if (chart.chart_type === "line") {
-      // flatten series into array of { series, x, y }
       const seriesNames = Object.keys(chart.series);
       const allData = seriesNames.flatMap((name) =>
         chart.series[name].map((value, i) => ({
@@ -89,7 +95,6 @@ export default function ChartVisualization({ chart }) {
         }))
       );
 
-      // scales
       const x = d3
         .scaleLinear()
         .domain(d3.extent(allData, (d) => d.x))
@@ -103,13 +108,11 @@ export default function ChartVisualization({ chart }) {
 
       const color = d3.scaleOrdinal(d3.schemeCategory10).domain(seriesNames);
 
-      // line generator
       const lineGen = d3
         .line()
         .x((d) => x(d.x))
         .y((d) => y(d.y));
 
-      // draw one path per series
       seriesNames.forEach((name) => {
         const seriesData = allData.filter((d) => d.series === name);
         svg
@@ -121,7 +124,6 @@ export default function ChartVisualization({ chart }) {
           .attr("d", lineGen);
       });
 
-      // axes
       svg
         .append("g")
         .attr("transform", `translate(0, ${height})`)
@@ -129,10 +131,7 @@ export default function ChartVisualization({ chart }) {
 
       svg.append("g").call(d3.axisLeft(y));
     }
-
-    // else: unknown type – do nothing
-
   }, [chart]);
 
-  return <div ref={ref} />;
+  return <div ref={ref}></div>;
 }

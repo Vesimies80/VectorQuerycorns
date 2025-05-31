@@ -50,6 +50,6 @@ export function getMockResponse(type) {
 
 export async function fetchMock(type) {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(getMockResponse(type)), 500);
+    setTimeout(() => resolve(getMockResponse(type)), 50);
   });
 }
