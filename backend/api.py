@@ -95,7 +95,7 @@ def previous(user_id: int, db: Session = Depends(get_db)):
                     index=proompt.id,
                     title=proompt.title,
                     text=proompt.response_text,
-                    chart=proompt.response,
+                    chart=proompt.response_json,
                 )
             )
         else:
