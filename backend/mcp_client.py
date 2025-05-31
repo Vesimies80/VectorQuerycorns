@@ -11,8 +11,11 @@ server_params = StdioServerParameters(
 class Chat:
     def __init__(self):
         self.messages = []
-        self.system_prompt: str = """You are a master SQLite assistant. 
-        Your job is to use the tools and resources at your dispoal to execute SQL queries and general information on the SQL database and then provide the results to the user."""
+        self.system_prompt: str = """You are a master postgre assistant. 
+        Your job is to use the tools and resources at your dispoal to 
+        execute queries and find general information on the database and then provide the results to the user. You must always follow the following rules
+        1. If the result contains more than 2 results then select a fitting diagram out of pie, bar and out put the response in the following format {"message": <Your answer>, "chart_type": <diagram type>, "values": <dict[str, float]>}
+        2. Keep the answer under 30000 tokens and inform the user if the answer would be longer"""
         
     async def process_query(self, session: ClientSession, query: str):
         
