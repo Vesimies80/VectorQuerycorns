@@ -11,6 +11,7 @@ export default function ChartVisualization({ chart }) {
   if (!chart) {
     return <div />;
   }
+  
 
   useEffect(() => {
     const container = d3.select(ref.current);
