@@ -8,7 +8,7 @@ import ResponseBubble from "../components/ResponseBubble";
 import LoadingBubble from "../components/LoadingBubble";
 import ChatInput from "../components/ChatInput";
 import { getOrCreateUserId } from "../lib/auth";
-import { queryBackend } from "../lib/api";
+import { queryBackend, fetchPreviousPrompts } from "../lib/api";
 
 export default function Home() {
   // 1) Dark mode state (default false, will adjust in useEffect)
@@ -60,6 +60,33 @@ export default function Home() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations]);
 
+  // ── New: Fetch previous responses once userId is available ──
+  useEffect(() => {
+    if (!userId) return;
+
+    (async () => {
+      try {
+        // 1) Call fetchPreviousPrompts and get an array of items
+        const prevArray = await fetchPreviousPrompts(userId);
+
+        // 2) Map each item into our conversation shape:
+        //    { index, prompt: null, response: item, loading: false }
+        const mapped = prevArray.map((item) => ({
+          index: item.index,
+          prompt: null,
+          response: item,
+          loading: false,
+        }));
+
+        // 3) Set the conversations state to that mapped array
+        setConversations(mapped);
+      } catch (err) {
+        console.error("Error loading previous conversations:", err);
+        // If fetch fails, we simply leave conversations as empty array
+      }
+    })();
+  }, [userId]);
+
   // Handle sending a new prompt to the backend
   const handleSend = async () => {
     if (!query.trim() || !userId) return;
@@ -85,8 +112,8 @@ export default function Home() {
       const resp = await queryBackend({ index: localIndex, prompt: query, userId });
 
       // Ensure resp is valid
-      if (!resp || typeof resp !== 'object') {
-        throw new Error('Invalid response format');
+      if (!resp || typeof resp !== "object") {
+        throw new Error("Invalid response format");
       }
 
       // 3) Replace loading placeholder with the real response
@@ -137,7 +164,7 @@ export default function Home() {
       <div className="flex-grow overflow-y-auto px-4 py-2">
         {conversations.map((conv) => (
           <div key={conv.index}>
-            {/* Right-aligned user prompt */}
+            {/* Right-aligned user prompt (if present) */}
             {conv.prompt != null && <PromptBubble prompt={conv.prompt} />}
 
             {/* If loading flag is true, show loading GIF */}
