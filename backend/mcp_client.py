@@ -44,9 +44,10 @@ class Chat:
             for msg in res[key]:
                 if msg.type == "ai" and msg.content != "":
                     print("AI response\n", msg.content)
+                    out = ModelOutput.model_validate_json(msg.content)
                     if "chart_type" in out:
                         try:
-                            out = ModelOutput.model_validate_json(msg.content)
+                            
                             
                             out = Response.model_validate(
                                 {
@@ -63,7 +64,6 @@ class Chat:
                         except Exception:
                             outputmsg.append(msg.content)
                     else:
-                        out = ModelOutput.model_validate_json(msg.content)
                         out = OnlyTextResponse.model_validate(
                             {
                                 "index":69,
