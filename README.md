@@ -193,12 +193,7 @@ Handles SQLAlchemy configuration for the SQLite database (backend/db/database.sq
 		- question (String)
 		- response_text (Text)
 		- response_json (Text: serialized Pydantic response)
-	- Hybrid Property
-	- response
-	- Deserializes the response_json (stored as a string) into a Pydantic Response object on access.
-	- get_db() Dependency
-	- Yields a database session.
-	- Ensures the session is committed and closed upon exit (using try/except/finally).
+	- get_db() create a fastapi dependency which makes sure database connection is established correctly and changes are committed.
 - mcp_client.py
 Defines Pydantic models and the Chat class for interacting with the MCP server:
 	- Pydantic Models
@@ -226,9 +221,10 @@ Defines Pydantic models and the Chat class for interacting with the MCP server:
 		- MCP Resources & Tools:
 		- @mcp.resource("config://northwind/schema")
 			- Returns metadata about all tables and columns in the Northwind database (for schema inspection).
-			- @mcp.tool() query_data(sql: str)
+		- @mcp.tool() query_data(sql: str)
 			- Executes an arbitrary SQL query against the Northwind database.
 			- Returns query results (rows) or an error message if the SQL fails.
+			- The query is run inside postgres transaction which makes sure no changes are done to the database (no commit is ever done)
 		- @mcp.tool() list_resources()
 			- Retrieves a list of Resource objects, each representing a table in the database (including its schema).
 		- @mcp.prompt() example_prompt(code: str)
