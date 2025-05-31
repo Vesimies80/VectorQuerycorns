@@ -28,6 +28,11 @@ services:
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.routers.backend.middlewares=api-stripprefix"
       - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
+    environment:
+      DB_HOST: dataset:5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: northwind
     develop:
       watch:
         - action: sync
@@ -48,4 +53,15 @@ services:
         - action: rebuild
           path: ./frontend
           target: /work
-
+  dataset:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: northwind
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgresql_bin:/usr/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
+      - ./northwind_psql/northwind.sql:/docker-entrypoint-initdb.d/northwind.sql
+      - ./northwind_psql/files:/files
+ 
