@@ -7,11 +7,11 @@ Backend docs: https://vectorquerycorns.org/api/docs#/default
 ### Setup 
 
 ## Dev setup
-    ```bash
     git clone https://github.com/Vesimies80/VectorQuerycorns.git
     cd frontend
     npm install
     npm run dev
+    Open url: http://localhost:3000
     
 ### TL;DR of Each File
 	•	layout.js: Sets page metadata, unicorn favicon, fonts, base Tailwind styles, and root structure.
